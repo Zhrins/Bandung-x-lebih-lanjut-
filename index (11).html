@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surat Digital - Spesial Buat Bunga</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Poppins:wght@300;400;500&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8eee7;
+            color: #4a3b32;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            max-height: 800px;
+            background: #2c1e22; 
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0,0,0,0.3);
+        }
+
+        /* --- MAGIC PARTICLES (KUNANG-KUNANG) --- */
+        #particles-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .particle {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px white, 0 0 20px #e9c49a;
+            opacity: 0;
+            animation: floatUp var(--duration) ease-in-out infinite;
+            animation-delay: var(--delay);
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            20% { opacity: 0.6; }
+            80% { opacity: 0.6; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+        }
+
+        /* --- FLOWER ANIMATIONS --- */
+        #flower-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 5; 
+            overflow: hidden;
+        }
+        .flower {
+            position: absolute;
+            top: 50%; left: 50%; 
+            transform: translate(-50%, -50%) scale(0) rotate(0deg);
+            transition: transform 1.2s cubic-bezier(0.25, 1, 0.35, 1), opacity 0.8s ease-out;
+            opacity: 0;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+        }
+        .flower.bloom {
+            transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(var(--scale)) rotate(var(--rot));
+            opacity: 1;
+        }
+        .flower.fall {
+            transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty) + 1000px)) scale(var(--scale)) rotate(calc(var(--rot) + 90deg));
+            opacity: 0;
+            transition: transform 1.8s cubic-bezier(0.55, 0.085, 0.68, 0.53), opacity 1.5s ease-in;
+        }
+
+        /* --- SCREEN UTILITY --- */
+        .screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease;
+            padding: 20px;
+            text-align: center;
+        }
+        .screen.active {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        /* --- TYPOGRAPHY & BUTTONS --- */
+        h1, h2, .serif { font-family: 'Playfair Display', serif; }
+        
+        /* Tombol dengan efek Glow (Full Effort) */
+        .btn {
+            background: linear-gradient(135deg, #d4a373, #c58c54);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 25px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(212, 163, 115, 0.4);
+            animation: pulseGlow 2s infinite;
+        }
+        .btn:active { transform: scale(0.92); }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 10px rgba(212, 163, 115, 0.4); }
+            50% { box-shadow: 0 0 25px rgba(212, 163, 115, 0.8); }
+            100% { box-shadow: 0 0 10px rgba(212, 163, 115, 0.4); }
+        }
+
+        /* --- 1. LOCK SCREEN --- */
+        #screen-lock { background-color: #f8eee7; z-index: 20; }
+        .lock-box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 35px 20px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+            width: 90%;
+            backdrop-filter: blur(10px);
+        }
+        .lock-msg { font-size: 14px; margin-bottom: 20px; min-height: 40px; color: #5c4033;}
+        .dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 30px; }
+        .dot { width: 14px; height: 14px; border-radius: 50%; background: #e5d5c5; transition: 0.3s; }
+        .dot.active { background: #c58c54; transform: scale(1.2); }
+        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .key { padding: 15px; font-size: 20px; background: #fff; border: 1px solid #f0e6dd; border-radius: 12px; cursor: pointer; color: #5c4033; transition: all 0.2s;}
+        .key:active { background: #f0e6dd; transform: scale(0.9); }
+
+        /* --- 2. ENVELOPE SCREEN --- */
+        #screen-envelope { background-color: transparent; color: white; }
+        .envelope-wrapper { position: relative; cursor: pointer; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2; }
+        .envelope-wrapper:hover { transform: scale(1.08) translateY(-5px); }
+        .envelope-body { width: 220px; height: 140px; background: linear-gradient(145deg, #fdf6e3, #f0e5c9); border-radius: 6px; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
+        .envelope-flap { position: absolute; top: 0; left: 0; width: 0; height: 0; border-left: 110px solid transparent; border-right: 110px solid transparent; border-top: 80px solid #e8dec7; transform-origin: top; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2; }
+        .envelope-wrapper.open .envelope-flap { transform: rotateX(180deg); }
+        
+        /* Animasi Jantung di Segel Amplop */
+        .seal { position: absolute; top: 70px; left: 50%; transform: translateX(-50%); width: 32px; height: 32px; background: #c15b5b; border-radius: 50%; z-index: 3; transition: opacity 0.3s; box-shadow: 0 4px 10px rgba(193, 91, 91, 0.5); animation: heartbeat 1.5s infinite; }
+        @keyframes heartbeat {
+            0% { transform: translateX(-50%) scale(1); }
+            15% { transform: translateX(-50%) scale(1.15); }
+            30% { transform: translateX(-50%) scale(1); }
+            45% { transform: translateX(-50%) scale(1.15); }
+            60% { transform: translateX(-50%) scale(1); }
+        }
+        .envelope-wrapper.open .seal { opacity: 0; }
+
+        /* --- SCREEN SELANJUTNYA --- */
+        #screen-intro { background-color: rgba(44, 30, 34, 0.6); color: #fdf6e3; backdrop-filter: blur(4px); }
+        #screen-intro h1 { font-size: 38px; font-style: italic; margin: 10px 0; color: #e9c49a; text-shadow: 0 4px 15px rgba(233, 196, 154, 0.4); }
+
+        #screen-cards { background-color: rgba(44, 30, 34, 0.6); backdrop-filter: blur(4px); }
+        .card-counter { position: absolute; top: 40px; color: #fdf6e3; font-size: 12px; letter-spacing: 3px; opacity: 0.8; }
+        
+        .card-stack { position: relative; width: 270px; height: 400px; margin-top: 20px; perspective: 1200px; }
+        .card {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fffdf8; border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 35px; text-align: center; color: #4a3b32;
+            transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transform-origin: center bottom;
+        }
+        .card p { font-family: 'Playfair Display', serif; font-size: 19px; line-height: 1.6; font-style: italic; color: #5c4033;}
+        
+        .card-btn { margin-top: 35px; background: #e9c49a; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; color: #4a3b32; font-size: 12px; font-family: 'Poppins', sans-serif; font-weight: 600; box-shadow: 0 4px 10px rgba(233, 196, 154, 0.3); transition: 0.2s;}
+        .card-btn:active { transform: scale(0.9); }
+        
+        /* Animasi Lempar Kartu Lebih Dramatis (Rotasi 3D) */
+        .card.throw { transform: translateY(-150px) rotateZ(-20deg) rotateY(30deg) scale(0.7); opacity: 0; pointer-events: none; }
+        
+        #screen-all-back { background-color: rgba(44, 30, 34, 0.6); color: white; backdrop-filter: blur(4px); }
+        .circle-text { font-size: 20px; color: #e9c49a; margin-bottom: 10px; letter-spacing: 2px;}
+        
+        #screen-letter { background-color: rgba(248, 238, 231, 0.92); backdrop-filter: blur(8px); }
+        .letter-box { background: white; width: 92%; max-height: 75vh; overflow-y: auto; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: left; font-size: 14px; line-height: 1.8; color: #4a3b32; }
+        .letter-box p { margin-bottom: 18px; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- MAGIC PARTICLES BACKGROUND -->
+    <div id="particles-bg"></div>
+
+    <!-- FLOWER ANIMATION LAYER -->
+    <div id="flower-bg"></div>
+
+    <!-- 1. LOCK SCREEN -->
+    <div id="screen-lock" class="screen active">
+        <div class="lock-box">
+            <p id="lock-text" class="lock-msg serif">Hai, ada sesuatu di dalam sini.<br><span style="font-size:10.5px; color:#999; font-family:'Poppins', sans-serif;">(ketik 4 digit PIN acak buat buka)</span></p>
+            <div class="dots">
+                <div class="dot" id="d1"></div><div class="dot" id="d2"></div>
+                <div class="dot" id="d3"></div><div class="dot" id="d4"></div>
+            </div>
+            <div class="keypad">
+                <div class="key" onclick="typePin(1)">1</div><div class="key" onclick="typePin(2)">2</div><div class="key" onclick="typePin(3)">3</div>
+                <div class="key" onclick="typePin(4)">4</div><div class="key" onclick="typePin(5)">5</div><div class="key" onclick="typePin(6)">6</div>
+                <div class="key" onclick="typePin(7)">7</div><div class="key" onclick="typePin(8)">8</div><div class="key" onclick="typePin(9)">9</div>
+                <div class="key" style="opacity:0; pointer-events:none;"></div>
+                <div class="key" onclick="typePin(0)">0</div>
+                <div class="key" onclick="clearPin()">⌫</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. ENVELOPE SCREEN -->
+    <div id="screen-envelope" class="screen">
+        <div class="envelope-wrapper" onclick="openEnvelope(this)">
+            <div class="envelope-body">
+                <div class="envelope-flap"></div>
+                <div class="seal"></div>
+            </div>
+        </div>
+        <p id="hint-text" class="serif" style="margin-top: 50px; font-style: italic; z-index: 2; font-size: 18px; text-shadow: 0 2px 5px rgba(0,0,0,0.5);">Ketuk untuk membuka 🌸</p>
+    </div>
+
+    <!-- 3. INTRO SCREEN -->
+    <div id="screen-intro" class="screen">
+        <p class="serif" style="letter-spacing: 2px;">KHUSUS BUAT</p>
+        <h1>bunga</h1>
+        <p class="serif" style="margin-top: 5px;">ada yang pengen aku sampein ke kamu.</p>
+        <button class="btn" onclick="nextScreen('screen-intro', 'screen-cards')">baca sekarang</button>
+    </div>
+
+    <!-- 4. CARDS SCREEN -->
+    <div id="screen-cards" class="screen">
+        <div class="card-counter" id="card-counter">1 dari 4</div>
+        <div class="card-stack" id="card-container">
+            <!-- Kartu otomatis dibuat lewat JS -->
+        </div>
+    </div>
+
+    <!-- 5. ALL BACK SCREEN -->
+    <div id="screen-all-back" class="screen">
+        <p class="circle-text serif">JADI...</p>
+        <h1 style="color:#e9c49a; font-style:italic; margin: 15px 0; font-size: 40px;">bunga</h1>
+        <p class="serif" style="max-width: 80%; line-height: 1.6; font-size: 18px;">itu yang lagi aku rasain sekarang.</p>
+        <button class="btn" onclick="nextScreen('screen-all-back', 'screen-letter')">baca versi panjangnya</button>
+    </div>
+
+    <!-- 6. LETTER SCREEN -->
+    <div id="screen-letter" class="screen">
+        <p style="font-size: 11px; color: #a98d78; margin-bottom: 12px; letter-spacing: 3px; font-weight: 500;">DARI NAWAL</p>
+        <div class="letter-box">
+            <p>Bunga, makasih ya udah mau luangin waktu buat buka ini. Jujur aja, bikin ginian butuh keberanian ekstra buat aku hahaha.</p>
+            <p>Aku tau kita baru sebentar banget kenalnya. Tapi entah kenapa, <i>vibe</i> kamu tuh beda. Kamu yang *exciting*, seru, dan selalu punya energi positif itu bener-bener gampang nular. Tiap interaksi sama kamu, hari-hariku otomatis jadi jauh lebih <i>fun</i>.</p>
+            <p>Aku sering nanya ke diriku sendiri, <b>"emang boleh ya suka secepat ini?"</b>. Logikanya mungkin terlalu buru-buru, tapi perasaannya nggak bisa dibohongin. Kamu berhasil bikin aku tertarik, lebih dari sekadar temen biasa.</p>
+            <p>Lewat ini, aku cuma pengen kamu tau. Nggak ada tuntutan buat kamu harus langsung jawab atau ngerasain hal yang sama kok. Aku cuma mau jujur, dan berharap kita bisa terus ngobrol asik kayak biasanya.</p>
+            <p style="text-align: right; font-style: italic; color: #888; margin-top:30px;">— nawal</p>
+        </div>
+        <button class="btn" onclick="alert('Semoga keberanianmu hari ini berbuah manis! 😊')">Selesai Dibaca</button>
+    </div>
+
+</div>
+
+<script>
+    // --- 0. MAGIC PARTICLES ---
+    function createParticles() {
+        const bg = document.getElementById('particles-bg');
+        for (let i = 0; i < 30; i++) {
+            let p = document.createElement('div');
+            p.className = 'particle';
+            let size = Math.random() * 4 + 2; // ukuran 2-6px
+            p.style.width = size + 'px';
+            p.style.height = size + 'px';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.setProperty('--duration', (Math.random() * 5 + 5) + 's');
+            p.style.setProperty('--delay', (Math.random() * 5) + 's');
+            bg.appendChild(p);
+        }
+    }
+    createParticles(); // Panggil saat web diload
+
+    // --- 1. LOGIKA PIN & TIMELINE ANIMASI ---
+    let pin = "";
+    function typePin(num) {
+        if(pin.length < 4) {
+            pin += num;
+            updateDots();
+            if(pin.length === 4) {
+                document.getElementById('lock-text').innerHTML = "Pintu terbuka!<br>Tunggu sebentar ya...";
+                
+                setTimeout(() => {
+                    document.getElementById('screen-lock').classList.remove('active');
+                    triggerFlowersBloomBurst();
+                }, 1000);
+
+                setTimeout(() => {
+                    makeFlowersFall();
+                }, 3800);
+
+                setTimeout(() => {
+                    document.getElementById('screen-envelope').classList.add('active');
+                }, 5200);
+            }
+        }
+    }
+    
+    function clearPin() {
+        pin = "";
+        updateDots();
+    }
+    
+    function updateDots() {
+        for(let i=1; i<=4; i++) {
+            document.getElementById('d'+i).className = i <= pin.length ? 'dot active' : 'dot';
+        }
+    }
+
+    // Animasi Ledakan Bunga Banyaaak (Full Effort)
+    function triggerFlowersBloomBurst() {
+        const bg = document.getElementById('flower-bg');
+        bg.innerHTML = ''; 
+        const flowers = ['🌸', '🌺', '🌷', '🏵️', '💮', '✨', '💖']; 
+        
+        for(let i = 0; i < 100; i++) {
+            let f = document.createElement('div');
+            f.className = 'flower';
+            f.innerText = flowers[Math.floor(Math.random() * flowers.length)];
+            
+            let angle = Math.random() * Math.PI * 2;
+            let distance = Math.random() * 500 + 30; 
+            
+            let tx = (Math.cos(angle) * distance) + 'px';
+            let ty = (Math.sin(angle) * distance) + 'px';
+            
+            f.style.setProperty('--tx', tx);
+            f.style.setProperty('--ty', ty);
+            
+            let scale = Math.random() * 2.5 + 1.2; 
+            f.style.setProperty('--scale', scale);
+            f.style.setProperty('--rot', (Math.random() * 360) + 'deg');
+            f.style.fontSize = (Math.random() * 2 + 1.5) + 'rem';
+            
+            bg.appendChild(f);
+            
+            setTimeout(() => {
+                f.classList.add('bloom');
+            }, Math.random() * 400); 
+        }
+    }
+
+    function makeFlowersFall() {
+        const flowers = document.querySelectorAll('.flower');
+        flowers.forEach(f => {
+            setTimeout(() => {
+                f.classList.add('fall');
+            }, Math.random() * 600);
+        });
+    }
+
+    function nextScreen(hideId, showId) {
+        document.getElementById(hideId).classList.remove('active');
+        setTimeout(() => {
+            document.getElementById(showId).classList.add('active');
+            if(showId === 'screen-cards') initCards();
+        }, 800);
+    }
+
+    function openEnvelope(el) {
+        document.getElementById('hint-text').style.opacity = '0';
+        el.classList.add('open');
+        
+        setTimeout(() => {
+            nextScreen('screen-envelope', 'screen-intro');
+        }, 1300);
+    }
+
+    // --- 4. LOGIKA KARTU (ALUR BARU SESUAI REQUEST) ---
+    const cardData = [
+        { main: "Mungkin ini kerasa tiba-tiba banget buat kamu...", sub: "jujur, buat aku juga ini di luar dugaan sebenernya hahaha.", btnMain: "terus?", btnSub: "lanjut baca" },
+        { main: "Habisnya, energi kamu tuh *exciting* banget.", sub: "serunya kamu itu gampang banget nular dan bikin aku nyaman.", btnMain: "masa sih?", btnSub: "buka selanjutnya" },
+        { main: "Saking serunya, aku kadang mikir sendiri...", sub: "\"emang boleh ya suka sama orang secepat ini?\"", btnMain: "buka yang terakhir", btnSub: "oke, siap" },
+        { main: "Bunga...", sub: "aku beneran suka sama kamu.", btnMain: "aku buang kartu ini", btnSub: "simpan di hati" }
+    ];
+
+    let currentCardIndex = 0;
+
+    function initCards() {
+        const container = document.getElementById('card-container');
+        container.innerHTML = '';
+        
+        for(let i = cardData.length - 1; i >= 0; i--) {
+            let subDiv = document.createElement('div');
+            subDiv.className = 'card';
+            subDiv.id = `card-sub-${i}`;
+            subDiv.style.zIndex = (cardData.length - i) * 2 - 1;
+            subDiv.innerHTML = `
+                <p style="color:#d4a373; font-size:28px; margin-bottom:15px; text-shadow: 0 2px 5px rgba(0,0,0,0.1);">✿</p>
+                <p>${cardData[i].sub}</p>
+                <button class="card-btn" onclick="throwCard('card-sub-${i}', true)">${cardData[i].btnSub}</button>
+            `;
+            container.appendChild(subDiv);
+
+            let mainDiv = document.createElement('div');
+            mainDiv.className = 'card';
+            mainDiv.id = `card-main-${i}`;
+            mainDiv.style.zIndex = (cardData.length - i) * 2;
+            mainDiv.innerHTML = `
+                <p>${cardData[i].main}</p>
+                <button class="card-btn" onclick="throwCard('card-main-${i}', false)">${cardData[i].btnMain}</button>
+            `;
+            container.appendChild(mainDiv);
+        }
+        updateCounter();
+    }
+
+    function throwCard(cardId, isSub) {
+        document.getElementById(cardId).classList.add('throw');
+        
+        if(isSub) {
+            currentCardIndex++;
+            if(currentCardIndex >= cardData.length) {
+                setTimeout(() => nextScreen('screen-cards', 'screen-all-back'), 900);
+            } else {
+                updateCounter();
+            }
+        }
+    }
+
+    function updateCounter() {
+        document.getElementById('card-counter').innerText = `${currentCardIndex + 1} dari 4`;
+    }
+
+</script>
+
+</body>
+</html>
